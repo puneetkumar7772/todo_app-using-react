@@ -2,13 +2,24 @@ import React, { useEffect, useState } from "react";
 import styles from "./Todo.module.css";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import { MdCheckBoxOutlineBlank } from "react-icons/md";
+//import { MdCheckBoxOutlineBlank } from "react-icons/md";
 
 const Todo = () => {
   const [task, setTask] = useState("");
   const [data, setData] = useState([]);
   const [value, setValue] = useState(null);
   const [condition, setCondition] = useState(true);
+
+useEffect(()=>{
+  const data=JSON.parse(localStorage.getItem("tasks"))||[]
+  setData(data)
+},[])
+
+useEffect(()=>{
+  if(data.length>0){
+    localStorage.setItem("tasks",JSON.stringify(data))
+  }
+},[data])
 
   const handleChange = (e) => {
     setTask(e.target.value);
@@ -25,7 +36,7 @@ const Todo = () => {
       setTask("");
     } else if (condition === true) {
       if (task.trim() !== "") {
-        setData([...data, { task: task, id: Date.now() }]);
+        setData([...data, { task: task, id: Date.now(), status: false }]);
         setTask("");
       }
     }
@@ -44,6 +55,19 @@ const Todo = () => {
     setTask(newData.task);
   };
 
+  const completedData = (id) => {
+    console.log("!!!!!!!", id);
+    setData(
+      data.map((item) => {
+        if (item.id === id) {
+          return { ...item, status: !item.status };
+        }
+        return item;
+      })
+    );
+  };
+ 
+  
   return (
     <div className={styles.main}>
       <div>
@@ -65,8 +89,15 @@ const Todo = () => {
         {data.map((ele) => {
           return (
             <div className={styles.content} key={ele.id}>
-              <input type="checkbox" className={styles.check} /><div className={styles.task_data}>{ele.task}</div>
-              <div>
+              <input
+                type="checkbox"
+                className={styles.check}
+                onChange={() => completedData(ele.id)}
+                checked={ele.status}
+              />
+              <p className={styles.task_data}>{ele.task}</p>
+              <div className={styles.completed}>
+              {ele.status && <p style={{color:"#fff",marginRight:"10px"}}>completed</p>}
                 <FaRegEdit
                   className={styles.icons}
                   onClick={() => editData(ele.id)}
